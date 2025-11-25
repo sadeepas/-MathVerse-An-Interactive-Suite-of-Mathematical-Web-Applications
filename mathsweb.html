@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathVerse | Interactive Math Tools</title>
+    <!-- Website Icon (Favicon) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚛️</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚛️</text></svg>">
+   
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* --- ENHANCED & OPTIMIZED UI STYLES --- */
+        :root {
+            --primary-gradient: linear-gradient(90deg, #F92B73 0%, #FF5E5E 100%);
+            --primary-color-start: #F92B73;
+            --primary-color-end: #FF5E5E;
+            --secondary-gradient: linear-gradient(135deg, #6B07B8 0%, #F92B73 100%);
+            --background-color: #120C18;
+            --text-color: #FFFFFF;
+            --text-color-muted: #A39EAA;
+            --card-bg-color: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --font-size-base: 1rem;
+            --font-size-h1: clamp(2.8rem, 6vw, 5rem);
+            --font-size-h2: clamp(2.2rem, 5vw, 3rem);
+            --font-size-h3: clamp(1.5rem, 4vw, 1.8rem);
+            --shadow-light: 0 8px 32px rgba(249, 43, 115, 0.1);
+            --shadow-hover: 0 15px 50px rgba(249, 43, 115, 0.2);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(249, 43, 115, 0.1), transparent 35%),
+                radial-gradient(circle at 80% 80%, rgba(107, 7, 184, 0.1), transparent 35%);
+            color: var(--text-color);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        body.nav-open {
+            overflow: hidden;
+        }
+       
+        /* --- LOADING SCREEN STYLES --- */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--background-color);
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(249, 43, 115, 0.15), transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(107, 7, 184, 0.15), transparent 40%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease-out, visibility 0.8s ease-out;
+            opacity: 1;
+            visibility: visible;
+        }
+        #loading-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loading-logo {
+            font-weight: 800;
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            color: var(--text-color);
+            margin-bottom: 2rem;
+            animation: bounceIn 1s ease-out forwards;
+            animation-delay: 0.2s;
+            opacity: 0;
+        }
+        .loading-logo-highlight {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-top-color: var(--primary-color-start);
+            border-radius: 50%;
+            animation: spin 1s linear infinite, fadeInScale 0.8s ease-out forwards;
+            animation-delay: 0.8s;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: translateY(-50px); }
+            60% { opacity: 1; transform: translateY(10px); }
+            100% { transform: translateY(0); }
+        }
+        @keyframes fadeInScale {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+       
+        /* --- ENHANCED HEADER & NAVIGATION --- */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem 5%;
+            background: rgba(18, 12, 24, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.3s ease;
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .logo {
+            font-weight: 800;
+            font-size: 1.6rem;
+            text-decoration: none;
+            color: var(--text-color);
+            z-index: 1002;
+        }
+        .logo-highlight {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-links {
+            display: none;
+            align-items: center;
+            gap: 2.5rem;
+        }
+        .nav-links a {
+            color: var(--text-color-muted);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            padding-bottom: 5px;
+            transition: color 0.3s ease;
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background: var(--primary-gradient);
+            transition: width 0.3s ease;
+        }
+        .nav-links a:hover { color: var(--text-color); }
+        .nav-links a:hover::after { width: 100%; }
+       
+        .hamburger {
+            display: block;
+            cursor: pointer;
+            z-index: 1002;
+            padding: 10px;
+            margin: -10px;
+        }
+        .hamburger .bar {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 5px auto;
+            background-color: var(--text-color);
+            transition: all 0.3s ease-in-out;
+        }
+        .hamburger.is-active .bar:nth-child(2) { opacity: 0; }
+        .hamburger.is-active .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        .hamburger.is-active .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+        .mobile-nav {
+            position: fixed;
+            top: 0;
+            left: 100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(18, 12, 24, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+            z-index: 1001;
+            transform: translateX(0);
+        }
+        .mobile-nav.is-active {
+            transform: translateX(-100%);
+        }
+        .mobile-nav a {
+            font-size: 1.8rem;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 1.5rem 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .mobile-nav.is-active a {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.3s;
+        }
+        /* --- REFINED HERO SECTION --- */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10rem 5% 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 3rem;
+            text-align: center;
+        }
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .hero h1 {
+            font-size: var(--font-size-h1);
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+        }
+        .hero .highlight {
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        .hero p {
+            font-size: 1.1rem;
+            max-width: 500px;
+            margin-bottom: 2.5rem;
+            color: var(--text-color-muted);
+        }
+        .btn {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: var(--primary-gradient);
+            color: var(--text-color);
+            box-shadow: var(--shadow-light);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .btn:hover::before { left: 100%; }
+        .btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: var(--shadow-hover);
+        }
+       
+        .hero-illustration {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        .hero-illustration img {
+            width: 90%;
+            max-width: 380px;
+            animation: floatAnimation 6s ease-in-out infinite;
+            filter: drop-shadow(0 10px 30px rgba(249, 43, 115, 0.2));
+        }
+       
+        @keyframes floatAnimation {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(1deg); }
+        }
+        /* --- OPTIMIZED ABOUT SECTION --- */
+        #about {
+            padding: 6rem 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4rem;
+            text-align: center;
+        }
+        .about-content {
+            max-width: 800px;
+        }
+        .about-content h2 {
+            font-size: var(--font-size-h2);
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+        .about-content p {
+            font-size: 1.1rem;
+            color: var(--text-color-muted);
+            margin-bottom: 1.5rem;
+        }
+        .about-features {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            width: 100%;
+            justify-items: center;
+        }
+        .feature-item {
+            background: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+        }
+        .feature-item:hover {
+            transform: translateY(-8px) scale(1.02);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: var(--shadow-light);
+        }
+        .feature-item h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        .feature-item p {
+            font-size: 0.95rem;
+            color: var(--text-color-muted);
+            margin-bottom: 0;
+        }
+        /* --- ENHANCED APPLICATIONS SECTION --- */
+        #applications { 
+            padding: 6rem 5%; 
+            background: linear-gradient(to bottom, transparent, rgba(249, 43, 115, 0.03));
+        }
+        h2 {
+            text-align: center;
+            font-size: var(--font-size-h2);
+            margin-bottom: 3rem;
+            font-weight: 600;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+       
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            justify-items: center;
+        }
+        .card {
+            background: var(--card-bg-color);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--text-color);
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 100%;
+            max-width: 350px;
+            box-shadow: var(--shadow-light);
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.1), transparent 40%);
+            border-radius: inherit;
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+        .card:hover {
+            transform: translateY(-12px) scale(1.02) perspective(1000px) rotateX(3deg) rotateY(-3deg);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: var(--shadow-hover);
+        }
+        .card:hover::before { opacity: 1; }
+        .card-image {
+            height: 220px;
+            background-size: cover;
+            background-position: center;
+            border-bottom: 1px solid var(--border-color);
+            filter: grayscale(20%) brightness(0.9);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+        .card-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary-gradient);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .card:hover .card-image {
+            filter: grayscale(0%) brightness(1.1);
+            transform: scale(1.08);
+        }
+        .card:hover .card-image::after { opacity: 0.1; }
+       
+        .card-content { 
+            padding: 2rem; 
+            text-align: left; 
+            position: relative;
+        }
+        .card h3 {
+            margin-bottom: 1rem;
+            font-size: var(--font-size-h3);
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        .card p {
+            color: var(--text-color-muted);
+            font-size: var(--font-size-base);
+            line-height: 1.6;
+        }
+        .card-arrow {
+            position: absolute;
+            bottom: 2rem;
+            right: 2rem;
+            font-size: 1.5rem;
+            transform: translateX(-20px) scale(0.8);
+            opacity: 0;
+            transition: all 0.4s ease;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card:hover .card-arrow {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+        }
+        /* --- REFINED FOOTER --- */
+        .site-footer {
+            background: #0C0710;
+            padding: 5rem 5% 3rem;
+            margin-top: 6rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            text-align: center;
+            justify-items: center;
+        }
+        .footer-column {
+            width: 100%;
+            max-width: 300px;
+        }
+        .footer-column h4 {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+        }
+        .footer-column p {
+            color: var(--text-color-muted);
+            max-width: 300px;
+            margin: 0 auto 1.5rem;
+        }
+        .footer-column ul { list-style: none; }
+        .footer-column ul li { margin-bottom: 1rem; }
+        .footer-column ul a {
+            color: var(--text-color-muted);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            display: block;
+        }
+        .footer-column ul a:hover { color: var(--primary-color-start); }
+       
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .social-links a {
+            color: var(--text-color-muted);
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 50%;
+            background: var(--card-bg-color);
+        }
+        .social-links a:hover {
+            color: var(--primary-color-start);
+            transform: translateY(-3px) scale(1.1);
+            background: rgba(249, 43, 115, 0.1);
+        }
+        .footer-bottom {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-color-muted);
+        }
+        /* --- ENHANCED ANIMATIONS & SCROLL-BASED FADE-IN --- */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
+        }
+        .visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Staggered delays for children elements */
+        .hero-content > * { transition-delay: calc(var(--delay) * 150ms); }
+        .about-features > .feature-item { transition-delay: calc(var(--feature-delay) * 120ms); }
+        .cards-grid > .card { transition-delay: calc(var(--card-delay) * 120ms); }
+        /* Tablet Styles */
+        @media (min-width: 768px) {
+            header { padding: 1.5rem 7%; }
+            #applications, #about { padding: 6rem 7%; }
+            .cards-grid { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 3rem; 
+                justify-items: stretch;
+            }
+            .about-features { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 2.5rem; 
+                justify-items: stretch;
+            }
+            .footer-grid {
+                grid-template-columns: repeat(3, 1fr);
+                text-align: left;
+                justify-items: start;
+                gap: 4rem;
+            }
+            .footer-column p { margin-left: 0; text-align: left; }
+            .social-links { justify-content: flex-start; }
+            .hero-illustration img { max-width: 450px; }
+            .feature-item { max-width: none; }
+            .card { max-width: none; }
+        }
+        /* Desktop Styles */
+        @media (min-width: 1024px) {
+            .nav-links { display: flex; }
+            .hamburger { display: none; }
+            .hero {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                text-align: left;
+                gap: 5rem;
+                padding: 8rem 7% 4rem;
+                align-items: center;
+                justify-items: center;
+            }
+            .hero-content {
+                align-items: flex-start;
+                justify-self: start;
+            }
+            .hero-illustration {
+                justify-self: end;
+            }
+            .hero-illustration img { max-width: 550px; }
+            .cards-grid { 
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+                gap: 4rem; 
+                justify-items: stretch;
+            }
+            #about {
+                gap: 5rem;
+                padding: 8rem 7%;
+            }
+            .about-content {
+                text-align: center;
+                max-width: 800px;
+            }
+            .about-features {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 3rem;
+                justify-items: stretch;
+                align-self: start;
+                width: 100%;
+            }
+            .footer-grid {
+                grid-template-columns: 2fr 1fr 1fr;
+                gap: 4rem;
+            }
+        }
+         /* Extra Large Desktop Styles */
+        @media (min-width: 1200px) {
+            .hero, #about, #applications, .site-footer {
+                padding-left: 10%;
+                padding-right: 10%;
+            }
+            .cards-grid { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 5rem; 
+            }
+            .about-features { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 3rem; 
+            }
+        }
+        @media (min-width: 1400px) {
+            .cards-grid { 
+                grid-template-columns: repeat(4, 1fr); 
+                gap: 4rem; 
+            }
+            .about-features { 
+                grid-template-columns: repeat(4, 1fr); 
+                gap: 2.5rem; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen">
+        <div class="loading-logo">Math<span class="loading-logo-highlight">Verse</span></div>
+        <div class="loading-spinner"></div>
+    </div>
+    <header>
+        <nav>
+            <a href="#home" class="logo">Math<span class="logo-highlight">Verse</span></a>
+            <div class="nav-links">
+                <a href="#home">Home</a>
+                <a href="#about">About</a>
+                <a href="#applications">Apps</a>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+    <div class="mobile-nav">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#applications">Apps</a>
+    </div>
+    <main>
+        <!-- HERO SECTION -->
+        <section class="hero" id="home">
+            <div class="hero-content">
+                <h1 class="fade-in" style="--delay: 1;">A Hub for <span class="highlight">Interactive Tools</span></h1>
+                <p class="fade-in" style="--delay: 2;">Welcome to MathVerse — a universe of creative and powerful applications. From advanced mathematical calculators to interactive explorations, every tool is built to be engaging, intuitive, and fun. Choose an application below and begin your journey into the world of mathematics.</p>
+                <div class="fade-in" style="--delay: 3;">
+                    <a href="#applications" class="btn">Launch an App</a>
+                </div>
+            </div>
+            <div class="hero-illustration fade-in" style="--delay: 2;">
+                <img src="a1.png" alt="Abstract mathematical art">
+            </div>
+        </section>
+        <!-- ABOUT SECTION -->
+        <section id="about">
+            <div class="about-content fade-in" style="--delay: 0;">
+                <h2>About <span class="highlight">MathVerse</span></h2>
+                <p>MathVerse is dedicated to transforming complex mathematical concepts into accessible, interactive, and enjoyable experiences. We believe that learning math should be intuitive and engaging, not intimidating.</p>
+                <p>Our platform offers a growing collection of powerful web applications designed to help students, educators, and enthusiasts visualize, understand, and solve mathematical problems in a dynamic environment.</p>
+            </div>
+            <div class="about-features">
+                <div class="feature-item fade-in" style="--feature-delay: 1;">
+                    <h3>Interactive Learning</h3>
+                    <p>Experience math hands-on with tools that respond to your input and visualize concepts in real-time.</p>
+                </div>
+                <div class="feature-item fade-in" style="--feature-delay: 2;">
+                    <h3>Modern Design</h3>
+                    <p>Enjoy a sleek, intuitive, and mobile-friendly interface across all our applications.</p>
+                </div>
+                <div class="feature-item fade-in" style="--feature-delay: 3;">
+                    <h3>Powerful Tools</h3>
+                    <p>Utilize advanced calculators, plotters, and simulators to tackle any mathematical challenge.</p>
+                </div>
+                <div class="feature-item fade-in" style="--feature-delay: 4;">
+                    <h3>Constant Innovation</h3>
+                    <p>We're always developing new applications and improving existing ones to enhance your learning.</p>
+                </div>
+            </div>
+        </section>
+        <!-- APPLICATIONS SECTION -->
+        <section id="applications">
+            <h2 class="fade-in">Our Applications</h2>
+            <div class="cards-grid">
+                <!-- Card 1 -->
+                <a href="trigo.html" class="card fade-in" style="--card-delay: 1;">
+                    <div class="card-image" style="background-image: url('trigo.jpg');"></div>
+                    <div class="card-content">
+                        <h3>Trigonometric PRO</h3>
+                        <p>Master trigonometry with this all-in-one suite of powerful, interactive tools. Effortlessly solve equations, visualize complex triangles, plot and analyze functions, simulate wave interference, and verify identities in a sleek, modern interface. Perfect for students who want to bring abstract concepts to life.</p>
+                        <span class="card-arrow">→</span>
+                    </div>
+                </a>
+                <!-- Card 2 -->
+                <a href="plotter.html" class="card fade-in" style="--card-delay: 2;">
+                    <div class="card-image" style="background-image: url('plotter.jpg');"></div>
+                    <div class="card-content">
+                        <h3>Aura Plotter</h3>
+                        <p>Aura Plotter is an advanced multi-mode graphing calculator that lets you switch between standard, polar, and transformation plots, find intersections, and visualize derivatives and integrals. With automatic analysis of roots, extrema, and interactive controls, it transforms equations into clear, dynamic visuals.</p>
+                        <span class="card-arrow">→</span>
+                    </div>
+                </a>
+                <!-- Card 3 -->
+                <a href="dice.html" class="card fade-in" style="--card-delay: 3;">
+                    <div class="card-image" style="background-image: url('dice.jpg');"></div>
+                    <div class="card-content">
+                        <h3>Ultimate Dice Lab</h3>
+                        <p>The Ultimate Dice Lab is a pro-level probability simulator with real-time distribution visuals, Chi-Squared fairness tests, 3D dice, casino mode, and data export—perfect for students, gamers, and developers exploring randomness.</p>
+                        <span class="card-arrow">→</span>
+                    </div>
+                </a>
+                <!-- Card 4 -->
+                <a href="calculas.html" class="card fade-in" style="--card-delay: 4;">
+                    <div class="card-image" style="background-image: url('calculas.png');"></div>
+                    <div class="card-content">
+                        <h3>Calculus Odyssey</h3>
+                        <p>Embark on your journey with Calculus Odyssey, the all-in-one web app that makes calculus clear and interactive. Visualize functions, tangents, and integrals in the graphing lab, solve problems with the symbolic calculator, practice with instant feedback, and access key formulas anytime. Perfect for students, educators, and enthusiasts alike.</p>
+                        <span class="card-arrow">→</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-column">
+                <a href="#home" class="logo">Math<span class="logo-highlight">Verse</span></a>
+                <p>Discover. Calculate. Visualize. All in MathVerse.</p>
+                <div class="social-links">
+                    <a href="https://github.com/sadeepas" aria-label="GitHub" target="_blank" rel="noopener noreferrer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                    </a>
+                    <a href="https://www.linkedin.com/in/sadeepa-lakshan/" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                    </a>
+                    <a href="https://www.youtube.com/@slsadeepatec/videos" aria-label="YouTube" target="_blank" rel="noopener noreferrer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+                    </a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#applications">Applications</a></li>
+                    <li><a href="mailto:sadeepapemasiri2@gmail.com">Contact Me</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Apps</h4>
+                <ul>
+                    <li><a href="trigo.html">Trigonometric PRO</a></li>
+                    <li><a href="plotter.html">Aura Plotter</a></li>
+                    <li><a href="dice.html">Ultimate Dice Lab</a></li>
+                    <li><a href="calculas.html">Calculus Odyssey</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Sadeepa Lakshan. All rights reserved.</p>
+        </div>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- LOADING SCREEN LOGIC ---
+            const loadingScreen = document.getElementById('loading-screen');
+           
+            const hideLoadingScreen = () => {
+                loadingScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    loadingScreen.remove();
+                }, 800);
+            };
+            window.addEventListener('load', () => {
+                setTimeout(hideLoadingScreen, 1500);
+            });
+            // --- FADE-IN ON SCROLL ANIMATION ---
+            const faders = document.querySelectorAll('.fade-in');
+            const appearOptions = { threshold: 0.1, rootMargin: "0px 0px -50px 0px" };
+            const appearOnScroll = new IntersectionObserver(function(entries, observer) {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                });
+            }, appearOptions);
+            faders.forEach(fader => appearOnScroll.observe(fader));
+            // --- CARD MOUSE-FOLLOW GLOW EFFECT ---
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.setProperty('--mouse-x', '50%');
+                    card.style.setProperty('--mouse-y', '50%');
+                });
+            });
+            // --- IMPROVED HAMBURGER MENU LOGIC ---
+            const hamburger = document.querySelector('.hamburger');
+            const mobileNav = document.querySelector('.mobile-nav');
+            const mobileNavLinks = document.querySelectorAll('.mobile-nav a');
+            const body = document.body;
+            const toggleNav = () => {
+                hamburger.classList.toggle('is-active');
+                mobileNav.classList.toggle('is-active');
+                body.classList.toggle('nav-open');
+            };
+            hamburger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleNav();
+            });
+            mobileNavLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (mobileNav.classList.contains('is-active')) {
+                        toggleNav();
+                    }
+                });
+            });
+            // Close nav on outside click
+            document.addEventListener('click', (e) => {
+                if (!hamburger.contains(e.target) && !mobileNav.contains(e.target)) {
+                    if (mobileNav.classList.contains('is-active')) {
+                        toggleNav();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
